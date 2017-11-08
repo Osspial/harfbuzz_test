@@ -1,0 +1,9 @@
+[package]
+name = "harfbuzz_test"
+version = "0.1.0"
+authors = ["Osspial <osspial@gmail.com>"]
+
+[dependencies]
+harfbuzz-sys = "0.1"
+freetype = { path = "../rust-freetype" }
+libc = "0.2"
