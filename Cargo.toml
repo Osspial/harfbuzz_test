@@ -5,5 +5,6 @@ authors = ["Osspial <osspial@gmail.com>"]
 
 [dependencies]
 harfbuzz-sys = "0.1"
-freetype = { path = "../rust-freetype" }
+freetype = { git = "https://github.com/Osspial/rust-freetype" }
 libc = "0.2"
+lazy_static = "0.2"
