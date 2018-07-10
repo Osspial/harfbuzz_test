@@ -14,63 +14,60 @@ use std::io::Read;
 use std::fs::File;
 
 fn main() {
-    let mut font_buf = vec![];
-    File::open("C:/Windows/Fonts/segoeui.ttf").unwrap().read_to_end(&mut font_buf).unwrap();
 
     unsafe {
-        // let mut hb_font = ptr::null_mut();
-        // let hb_face = hb_face_create(font_buf.as_ptr(), 0);
-
         let text = "Hello World!";
         let mut lib = ptr::null_mut();
         let mut ft_face = ptr::null_mut();
         assert_eq!(FT_Error(0), FT_Init_FreeType(&mut lib));
+        assert_eq!(FT_Error(0), FT_New_Face(lib, "C:/fonts/seguiemj.ttf\0".as_ptr() as *const i8, 0, &mut ft_face));
+        let mut font_buf = vec![];
+        File::open("./DejaVuSans.ttf").unwrap().read_to_end(&mut font_buf).unwrap();
         assert_eq!(FT_Error(0), FT_New_Memory_Face(lib, font_buf.as_ptr(), font_buf.len() as c_int, 0, &mut ft_face));
         assert_eq!(FT_Error(0), FT_Set_Char_Size(ft_face, 0, 16*64, 72, 72));
-        println!("{}", FT_Get_Char_Index(ft_face, 'H' as _));
 
         let size = &*(*ft_face).size;
 
         let hb_blob = hb_blob_create(font_buf.as_ptr() as *const c_char, font_buf.len() as c_uint, HB_MEMORY_MODE_READONLY, ptr::null_mut(), None);
-        let hb_face = hb_face_create(hb_blob, (*ft_face).face_index as c_uint);
+        // ISSUE: Uncommenting the following line causes the linker to fail.
+        // let hb_face = hb_face_create(hb_blob, (*ft_face).face_index as c_uint);
 
-        hb_face_set_index(hb_face, (*ft_face).face_index as c_uint);
-        hb_face_set_upem(hb_face, (*ft_face).units_per_EM as c_uint);
+        // hb_face_set_upem(hb_face, (*ft_face).units_per_EM as c_uint);
 
-        let hb_font = hb_font_create(hb_face);
+        // let hb_font = hb_font_create(hb_face);
 
-        hb_font_set_funcs(
-            hb_font,
-            HB_FUNCS.0,
-            Box::into_raw(Box::new(FontFuncData {
-                ft_face,
-                load_flags: (FT_LOAD_DEFAULT | FT_LOAD_NO_HINTING) as c_int,
-                symbol: (*ft_face).charmap != ptr::null_mut() && (*(*ft_face).charmap).encoding == FT_Encoding__FT_ENCODING_MS_SYMBOL
-            })) as *mut c_void,
-            Some(drop_font_func_data)
-        );
+        // hb_font_set_funcs(
+        //     hb_font,
+        //     HB_FUNCS.0,
+        //     Box::into_raw(Box::new(FontFuncData {
+        //         ft_face,
+        //         load_flags: (FT_LOAD_DEFAULT | FT_LOAD_NO_HINTING) as c_int,
+        //         symbol: (*ft_face).charmap != ptr::null_mut() && (*(*ft_face).charmap).encoding == FT_Encoding__FT_ENCODING_MS_SYMBOL
+        //     })) as *mut c_void,
+        //     Some(drop_font_func_data)
+        // );
 
-        hb_font_set_scale(hb_font,
-            ((size.metrics.x_scale as u64 * (*ft_face).units_per_EM as u64 + (1<<15)) >> 16) as i32,
-            ((size.metrics.y_scale as u64 * (*ft_face).units_per_EM as u64 + (1<<15)) >> 16) as i32
-        );
+        // hb_font_set_scale(hb_font,
+        //     ((size.metrics.x_scale as u64 * (*ft_face).units_per_EM as u64 + (1<<15)) >> 16) as i32,
+        //     ((size.metrics.y_scale as u64 * (*ft_face).units_per_EM as u64 + (1<<15)) >> 16) as i32
+        // );
 
-        let buf = hb_buffer_create();
-        hb_buffer_add_utf8(buf, text.as_ptr() as *const c_char, text.len() as i32, 0, text.len() as i32);
-        hb_buffer_guess_segment_properties(buf);
-        hb_shape(hb_font, buf, ptr::null(), 0);
+        // let buf = hb_buffer_create();
+        // hb_buffer_add_utf8(buf, text.as_ptr() as *const c_char, text.len() as i32, 0, text.len() as i32);
+        // hb_buffer_guess_segment_properties(buf);
+        // hb_shape(hb_font, buf, ptr::null(), 0);
 
-        let mut glyph_count = 0;
-        let glyph_info = hb_buffer_get_glyph_infos(buf, &mut glyph_count);
-        let glyph_pos = hb_buffer_get_glyph_positions(buf, &mut glyph_count);
+        // let mut glyph_count = 0;
+        // let glyph_info = hb_buffer_get_glyph_infos(buf, &mut glyph_count);
+        // let glyph_pos = hb_buffer_get_glyph_positions(buf, &mut glyph_count);
 
-        let glyph_info_slice = slice::from_raw_parts(glyph_info, glyph_count as usize);
-        let glyph_pos_slice = slice::from_raw_parts(glyph_pos, glyph_count as usize);
+        // let glyph_info_slice = slice::from_raw_parts(glyph_info, glyph_count as usize);
+        // let glyph_pos_slice = slice::from_raw_parts(glyph_pos, glyph_count as usize);
 
-        for (info, pos) in glyph_info_slice.iter().zip(glyph_pos_slice.iter()) {
-            // println!("{:?} {:?}", info, pos);
-            println!("pos {:?} advance {:?} code {:?}", (pos.x_offset, pos.y_offset), (pos.x_advance, pos.y_advance), info.codepoint);
-        }
+        // for (info, pos) in glyph_info_slice.iter().zip(glyph_pos_slice.iter()) {
+        //     // println!("{:?} {:?}", info, pos);
+        //     println!("pos {:?} advance {:?} code {:?}", (pos.x_offset, pos.y_offset), (pos.x_advance, pos.y_advance), info.codepoint);
+        // }
     }
 }
 
